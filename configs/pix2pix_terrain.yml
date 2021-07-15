@@ -8,6 +8,7 @@ model_params:
 exp_params:
   dataset: terrain
   data_path: '../terrain_contour_3k/'
+  norm: 1
   n_workers: 16
   img_size: 256
   batch_size: 32

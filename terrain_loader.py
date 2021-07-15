@@ -13,7 +13,7 @@ def show_images(f):
 
 class TerrainDataset(Dataset):
 
-    def __init__(self, root, shuffle=True, transform=None, output_down=1, train=False, hide_green=False):
+    def __init__(self, root, shuffle=True, transform=None, norm=1, train=False, hide_green=False):
         self.root = root
         if train:
             # with open(os.path.join(root, 'train.txt'), 'r') as f:
@@ -29,7 +29,7 @@ class TerrainDataset(Dataset):
             random.shuffle(self.files)
         
         self.transform = transform
-        self.output_down = output_down
+        self.norm = norm
         self.train = train
         self.hide_green = hide_green
 
@@ -40,12 +40,12 @@ class TerrainDataset(Dataset):
     
     def __getitem__(self, index: int):
         assert index<len(self), 'index out of range'
+        
         if index in self.__cache:
             input_img, dem = self.__cache[index]
         else:
             file_path = os.path.join(self.root, self.image_dir, self.files[index])
             orig = cv2.imread(file_path)
-
             input_img = orig[:,:256,:]
             dem = orig[:,256:,:]
 
@@ -54,36 +54,39 @@ class TerrainDataset(Dataset):
 
             input_img = cv2.cvtColor(input_img,cv2.COLOR_BGR2RGB)
             dem = cv2.cvtColor(dem,cv2.COLOR_BGR2RGB)
-            
+
             assert np.all(np.array(input_img.shape)==np.array(dem.shape)), "Shape mismatch"
-            
             self.__cache[index] = (input_img, dem)
 
+        if self.train:
+            # data augmentation
+            # h,w,c = input_img.shape
 
-        # data augmentation
-        # h,w,c = input_img.shape
-
-        # input_img, dem = get_random_crop(input_img, dem, 256,256)
-        # dem = get_random_crop(, 256,256)1
-
-        # flip
-        if( torch.rand(()) > 0.5):
-            input_img = cv2.flip(input_img, 1)
-            dem = cv2.flip(dem, 1)
+            # input_img, dem = get_random_crop(input_img, dem, 256,256)
+            # dem = get_random_crop(, 256,256)1
+            
+            # flip
+            if( torch.rand(()) > 0.5):
+                input_img = cv2.flip(input_img, 1)
+                dem = cv2.flip(dem, 1)
         
-        #Normalize between [-1,1]
-        input_img = torch.from_numpy(input_img.transpose((2, 0, 1))).float().div(127.5)-1
-        dem = torch.from_numpy(dem.transpose((2, 0, 1))).float().div(127.5)-1
-
-        #Normalize between [0,1]
-        # input_img = torch.from_numpy(input_img.transpose((2, 0, 1))).float().div(255)
-        # dem = torch.from_numpy(dem.transpose((2, 0, 1))).float().div(255)
+        if self.norm==0:
+            #Normalize between [0,1]
+            input_img = torch.from_numpy(input_img.transpose((2, 0, 1))).float().div(255)
+            dem = torch.from_numpy(dem.transpose((2, 0, 1))).float().div(255)
+        elif self.norm==1:
+            #Normalize between [-1,1]
+            input_img = torch.from_numpy(input_img.transpose((2, 0, 1))).float().div(127.5)-1
+            dem = torch.from_numpy(dem.transpose((2, 0, 1))).float().div(127.5)-1
+        else:
+            raise Exception("Invalid normalization scheme")
         
         if self.transform is not None:
             input_img = self.transform(input_img)
             dem = self.transform(dem)
 
         return input_img, dem
+
 
 def get_random_crop(image, dem, crop_height, crop_width):
 
