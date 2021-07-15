@@ -1,0 +1,35 @@
+
+model_params:
+  name: 'Pix2Pix GAN'
+  gen_name: Generator
+  disc_name: Discriminator
+
+
+exp_params:
+  dataset: terrain
+  data_path: '../terrain_contour_3k/'
+  img_size: 256
+  batch_size: 32
+  in_channels: 3
+  out_channels: 3
+  hide_green: False
+  output_downsize: 1
+  gen_learning_rate: 0.0002
+  disc_learning_rate: 0.0002
+  beta1: 0.5
+  beta2: 0.999
+  weight_decay: 0.00
+  # scheduler_gamma: 0.95
+  # scheduler_gamma_2: 0.95
+
+
+trainer_params:
+  gpus: 1
+  # max_nb_epochs: 100
+  max_epochs: 500
+
+
+logging_params:
+  save_dir: "logs/"
+  name: "pix2pix_terrain"
+  manual_seed: 1565
