@@ -52,7 +52,6 @@ class Pix2pixExperiment(pl.LightningModule):
     def training_step(self, batch, batch_idx, optimizer_idx = 0):
         input_img, dem = batch
         self.curr_device = input_img.device
-        # self.curr_device = dem.device
 
         if optimizer_idx==0:
             self.gen_output = self.forward(input_img)
@@ -64,7 +63,6 @@ class Pix2pixExperiment(pl.LightningModule):
                     'gan_loss':gan_loss,
                     'loss': total_gen_loss}
             self.logger.experiment.log({key: val.item() for key, val in train_losses.items() if key!='loss'})
-            # return total_gen_loss
 
         elif optimizer_idx==1:
             disc_real_output = self.disc_model(input_img, dem)
@@ -75,18 +73,8 @@ class Pix2pixExperiment(pl.LightningModule):
                     'total_disc_loss':total_disc_loss,
                     'loss':total_disc_loss}
             self.logger.experiment.log({key: val.item() for key, val in train_losses.items() if key!='loss'})
-            # return total_disc_loss
-            pass
-        # print(train_losses)
-        # train_losses = {'total_gen_loss':total_gen_loss,
-        #             'l1_rec_loss':l1_rec_loss,
-        #             'gan_loss':gan_loss,
-        #             'total_disc_loss':total_disc_loss,
-        #             'loss': total_gen_loss}
-
 
         return train_losses
-
 
     def validation_step(self, batch, batch_idx ):
         input_img, dem = batch
@@ -111,8 +99,7 @@ class Pix2pixExperiment(pl.LightningModule):
 
         return val_losses
 
-
-    def validation_end(self, outputs):
+    def validation_epoch_end(self, outputs):
         total_gen_loss = torch.stack([x['total_gen_loss'] for x in outputs]).mean()
         l1_rec_loss = torch.stack([x['l1_rec_loss'] for x in outputs]).mean()
         gan_loss = torch.stack([x['gan_loss'] for x in outputs]).mean()
@@ -120,6 +107,7 @@ class Pix2pixExperiment(pl.LightningModule):
 
         tensorboard_logs = {'total_gen_loss': total_gen_loss, 'l1_rec_loss': l1_rec_loss, 
                             'gan_loss': gan_loss, 'total_disc_loss': total_disc_loss}
+        
         self.sample_images()
         return {'val_loss': total_gen_loss, 'log': tensorboard_logs}
 
@@ -142,7 +130,6 @@ class Pix2pixExperiment(pl.LightningModule):
                           nrow=5)
 
         del test_input, recons #, samples
-
 
     def configure_optimizers(self):
 
@@ -196,6 +183,7 @@ class Pix2pixExperiment(pl.LightningModule):
         self.num_train_imgs = len(dataset)
         return DataLoader(dataset,
                           batch_size= self.params['batch_size'],
+                          num_workers=self.params['n_workers'],
                           shuffle = True,
                           drop_last=True)
 
@@ -211,7 +199,8 @@ class Pix2pixExperiment(pl.LightningModule):
                                     output_down = self.params['output_downsize'])
             self.sample_dataloader = DataLoader(dataset,
                                                 batch_size= 25,
-                                                shuffle = True,
+                                                num_workers=self.params['n_workers'],
+                                                shuffle = False,
                                                 drop_last=True)
             self.num_val_imgs = len(self.sample_dataloader)
         else:
