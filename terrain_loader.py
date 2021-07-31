@@ -3,6 +3,7 @@ import os
 import random
 import numpy as np
 import torch
+
 from torch.utils.data import Dataset 
 import cv2
 
@@ -51,14 +52,14 @@ class TerrainDataset(Dataset):
 
             if self.hide_green:
                 input_img[:,:,1] = 0
-
+          
             input_img = cv2.cvtColor(input_img,cv2.COLOR_BGR2RGB)
             dem = cv2.cvtColor(dem,cv2.COLOR_BGR2RGB)
 
             assert np.all(np.array(input_img.shape)==np.array(dem.shape)), "Shape mismatch"
             self.__cache[index] = (input_img, dem)
 
-        if self.train:
+        # if self.train:
             # data augmentation
             # h,w,c = input_img.shape
 
@@ -66,9 +67,9 @@ class TerrainDataset(Dataset):
             # dem = get_random_crop(, 256,256)1
             
             # flip
-            if( torch.rand(()) > 0.5):
-                input_img = cv2.flip(input_img, 1)
-                dem = cv2.flip(dem, 1)
+            # if( torch.rand(()) > 0.5):
+            #     input_img = cv2.flip(input_img, 1)
+            #     dem = cv2.flip(dem, 1)
         
         if self.norm==0:
             #Normalize between [0,1]
@@ -77,6 +78,9 @@ class TerrainDataset(Dataset):
         elif self.norm==1:
             #Normalize between [-1,1]
             input_img = torch.from_numpy(input_img.transpose((2, 0, 1))).float().div(127.5)-1
+            dem = torch.from_numpy(dem.transpose((2, 0, 1))).float().div(127.5)-1
+        elif self.norm==2:
+            input_img = torch.from_numpy(input_img.transpose((2, 0, 1))).float().div(255)
             dem = torch.from_numpy(dem.transpose((2, 0, 1))).float().div(127.5)-1
         else:
             raise Exception("Invalid normalization scheme")

@@ -4,7 +4,8 @@ import argparse
 import numpy as np
 import cv2
 from models import *
-from experiments.vae_experiment import VAEXperiment
+from vae_experiment import VAEXperiment
+from pix2pix_experiment import Pix2pixExperiment
 import torch.backends.cudnn as cudnn
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TestTubeLogger
@@ -19,10 +20,7 @@ parser.add_argument('--config',  '-c',
                     help =  'path to the config file',
                     default='configs/vae.yaml')
                     
-parser.add_argument('--pretrained_model', '-m', dest='model_file',
-                    help="path to pretrained model file to start with")
 
- 
 
 args = parser.parse_args()
 with open(args.filename, 'r') as file:
@@ -45,14 +43,23 @@ np.random.seed(config['logging_params']['manual_seed'])
 cudnn.deterministic = True
 cudnn.benchmark = False
 
-model = vae_models[config['model_params']['name']](**config['model_params'])
 
-if args.model_file:
-    experiment = VAEXperiment.load_from_checkpoint(args.model_file, vae_model=model,params=config['exp_params'])
+#Vae Model
+vae_model = vae_models[config['vae_model_params']['name']](**config['vae_model_params'])
+
+# pix2pix model
+gen_model = pix2pix_model[config['pix2pix_model_params']['gen_name']](config['exp_params']['in_channels'],config['exp_params']['out_channels'])
+disc_model = pix2pix_model[config['pix2pix_model_params']['disc_name']](config['exp_params']['in_channels'])
+
+
+if config['vae_model_params']['load_model'] and config['pix2pix_model_params']['load_model']:
+    experiment_vae = VAEXperiment.load_from_checkpoint(config['vae_model_params']['pretrained_model'], vae_model=vae_model,params=config['exp_params'])
+    experiment_p2p = Pix2pixExperiment.load_from_checkpoint(config['pix2pix_model_params']['pretrained_model'], gen_model=gen_model,disc_model=disc_model,params=config['exp_params'])
     print("[INFO] Loaded pretrained model")
 else:
-    experiment = VAEXperiment(model, config['exp_params'])
+    experiment = VAEXperiment(vae_model, config['exp_params'])
     print("[INFO] Loaded randomly initialized model")
+
 
 checkpoint_callback = ModelCheckpoint(
 	monitor='val_loss',
@@ -60,26 +67,15 @@ checkpoint_callback = ModelCheckpoint(
 	save_top_k=3
 )
 
-runner = Trainer(default_root_dir=f"{tt_logger.save_dir}",
-                 min_epochs=1,
-                 logger=tt_logger,
-                 flush_logs_every_n_steps=100,
-                 limit_train_batches=1.,
-                 limit_val_batches=1.,
-                 num_sanity_val_steps=5,
-                 callbacks=[checkpoint_callback],
-                 **config['trainer_params'])
-
-
 
 if config['exp_params']['train']:
 
     print(f"======= Training {config['model_params']['name']} =======")
-    runner.fit(experiment)
+    # runner.fit(experiment)
     # runner.save_checkpoint()
 
 else:
-    print(f"======= Testing {config['model_params']['name']} =======")
+    print(f"======= Testing =======")
     dataset = TerrainDataset(root = config['exp_params']['data_path'],
                         train=False,
                         hide_green=config['exp_params']['hide_green'],
@@ -91,20 +87,28 @@ else:
                                     drop_last=False)
 
     def denormalize(result):
-        minv, maxv = torch.min(result), torch.max(result)
-        new = (result/maxv)*255.0
+        # minv, maxv = torch.min(result), torch.max(result)
+        new = (result+1)*127.5
         return torch.squeeze(new).detach().numpy().transpose((1,2,0)).astype(np.uint8)
 
-    model.eval()
+    vae_model.eval()
+    gen_model.eval()
 
     for ip, op in sample_dataloader:
-        res = model(ip)[0]
+        res = vae_model(ip)[0]
+
+        vae_res = torch.squeeze(res*255).detach().numpy().transpose((1,2,0)).astype(np.uint8)
+        res = res*2-1
+
+        res = gen_model(res)
         # print(len(res))
         res = denormalize(res)
-        op = denormalize(ip)
+        op = denormalize(op)
 
-        cv2.imshow('in',res)
-        cv2.imshow('out',op)
-        cv2.imwrite('input.png',res)
-        cv2.imwrite('output.png',op)
+        cv2.imshow('sampled',vae_res)
+        cv2.imshow('generated',res)
+        cv2.imshow('desired',op)
+        cv2.imwrite('sampled.png',vae_res)
+        cv2.imwrite('generated.png',res)
+        cv2.imwrite('desired.png',op)
         cv2.waitKey()
