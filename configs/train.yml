@@ -9,7 +9,7 @@ pix2pix_model_params:
   name: 'Pix2Pix GAN'
   gen_name: Generator
   disc_name: Discriminator
-  load_model: True
+  load_model: False
   pretrained_model: "checkpoints/pix2pix.ckpt"
  
 

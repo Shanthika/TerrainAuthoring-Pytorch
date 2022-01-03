@@ -14,9 +14,7 @@ pix2pix_model_params:
 
 
 exp_params:
-  train: True
   dataset: terrain
-  # data_path: "./"
   data_path: "/home/hdd/Documents/Terrain Authoring/terrain_datasets/terrain_contour_3k/"
   img_size: 256
   norm: 2
@@ -25,16 +23,8 @@ exp_params:
   out_channels: 3
   hide_green: False
   batch_size: 32 # Better to have a square number
-  LR: 0.001
-  gen_learning_rate: 0.0002
-  disc_learning_rate: 0.0002
-  beta1: 0.5
-  beta2: 0.999
-  weight_decay: 0.00 
 
-trainer_params:
-  gpus: 1
-  max_epochs: 1
+
 
 logging_params:
   save_dir: "logs/"

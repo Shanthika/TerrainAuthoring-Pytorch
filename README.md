@@ -22,6 +22,23 @@ python train.py --config configs/train.yml
 
 
 ## Testing the model
+This architecture provides multiple applications. To generate a single output use the command
+```
+python test.py --var single
+```
+
+##### Terrain Varitions
+To generate multiple output variations for the same input, use the command
+```
+python test.py --var multiple
+```
+
+##### Terrain Interpolation
+The model can be used to smoothly interpolate between the given two terrains. ![](./images/interpolation.gif) To interpolate between two terrains, specify the folder location containing the terrains in the *test.yml* file. Then use the command
+```
+python interpolate.py
+```
+
 
 ## Use the UI
 The given model can be used to render the terrains in an interactive mode. ![](images/UI.png)
@@ -37,9 +54,7 @@ pip install opencv-python-headless
 
 
 
-## Terrain Interpolation
-The model can be used to smoothly interpolate between the given two terrains
-![](./images/interpolation.gif)
 
 
-## Terrain Varitions
+
+
