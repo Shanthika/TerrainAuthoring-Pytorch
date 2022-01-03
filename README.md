@@ -23,5 +23,8 @@ conda env create --file environment.yml
 ## Use the UI
 
 ## Terrain Interpolation
+The model can be used to smoothly interpolate between the given two terrains
+![Alt Text](./images/interpolation.gif)
+
 
 ## Terrain Varitions
