@@ -22,12 +22,12 @@ python train.py --config configs/train.yml
 
 
 ## Testing the model
-This architecture provides multiple applications. To generate a single output use the command
+This architecture provides multiple applications. To generate a single output use the following command. The results will be saved in *images* folder.
 ```
 python test.py --var single
 ```
 
-##### Terrain Varitions
+##### Terrain Variations
 To generate multiple output variations for the same input, use the command
 ```
 python test.py --var multiple

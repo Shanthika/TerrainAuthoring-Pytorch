@@ -86,6 +86,9 @@ dependencies:
     - pyasn1-modules==0.2.8
     - pydeprecate==0.3.1
     - pyparsing==3.0.6
+    - pyqt5==5.15.6
+    - pyqt5-qt5==5.15.2
+    - pyqt5-sip==12.9.0
     - pytorch-lightning==1.5.7
     - pytz==2021.3
     - pyyaml==6.0
