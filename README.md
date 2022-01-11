@@ -1,6 +1,6 @@
 # TerrainAuthoring-Pytorch
 
-This is the code for the paper **Deep Generative Framework for Interactive 3D Terrain Authoring and Manipulation**(link).
+This is the implemetation of the paper **[Deep Generative Framework for Interactive 3D Terrain Authoring and Manipulation](https://arxiv.org/abs/2201.02369)**.
 
 
 ## Installation.
