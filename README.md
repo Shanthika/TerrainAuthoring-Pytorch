@@ -8,8 +8,8 @@ Please install [conda](https://docs.anaconda.com/anaconda/install/index.html). C
 ```
 conda env create --file environment.yml
 ```
-
-## Dataset
+<!-- 
+## Dataset -->
 
 ## Experiments
 The proposed architecture is composed of *VAE* and *Pix2pix* architectures. We have referred the [PyTorch-VAE](https://github.com/AntixK/PyTorch-VAE) repository for the VAE implementation.
