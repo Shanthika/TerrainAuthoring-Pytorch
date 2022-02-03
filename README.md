@@ -3,7 +3,7 @@
 This is the implemetation of the paper **[Deep Generative Framework for Interactive 3D Terrain Authoring and Manipulation](https://arxiv.org/abs/2201.02369)**.
 
 
-## Installation.
+## Installation
 Please install [conda](https://docs.anaconda.com/anaconda/install/index.html). Create a new environment and install all the dependencies using the following command
 ```
 conda env create --file environment.yml
