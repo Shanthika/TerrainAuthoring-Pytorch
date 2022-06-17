@@ -15,7 +15,7 @@ conda env create --file environment.yml
 The proposed architecture is composed of *VAE* and *Pix2pix* architectures. We have referred the [PyTorch-VAE](https://github.com/AntixK/PyTorch-VAE) repository for the VAE implementation.
  
 ## Training the model
-To train the model in trained in two steps. To train the VAE model, set the *load_model* parameter in *train.yml* to False. To train the *pix2pix* model use the following command. The checkpoints will be saved in *logs* directory.
+The model is trained in two steps. To train the VAE model, set the *load_model* parameter in *train.yml* to False. To train the *pix2pix* model use the following command. The checkpoints will be saved in *logs* directory.
 ```
 python train.py --config configs/train.yml
 ```
